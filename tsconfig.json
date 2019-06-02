@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators":true,
+        "emitDecoratorMetadata": true,
+        "module": "none",
+        "target": "ES6",
+        "outDir": "ts-built",
+        "rootDir": "src"
+    }
+}
