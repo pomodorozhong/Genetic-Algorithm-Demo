@@ -2,15 +2,37 @@
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<title>GA Demo</title>
-	<link href="./css/index.css" rel="stylesheet" type="text/css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>GA Demo</title>
+    <link href="./css/index.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-	<canvas id="canvas"></canvas>
-	<script src="./build/bundle.js"></script>
+    <div id="frame">
+        <div id="intro">
+            <h2>簡介</h2>
+            <p>這是一個簡單的例子，展示基因演算法應用在遊戲 AI 上的樣子。</p>
+            <p>
+                <a>畫面上每個方框代表一個生物個體。它們在每一幀都會往「上下左右」其中一個方向移動。它們要移動的方向的序列，儲存在長度</a>
+                <a id="movesetLength" class="var"></a>
+                <a>的陣列內，每一幀每一個方框會根據對應的陣列內容來決定移動方向。陣列內容一開始是隨機的，然後由基因演算法不斷調整。</a>
+            </p>
+            <p>
+                <a>基因演算法根據「沒有碰到邊界的時間長度」，來調整方框的移動方向序列。「沒有碰到邊界的時間長度」越長的方框，它所具有的「移動方向序列」就越容易被複製，而出現在後代的移動模式中。</a>
+            </p>
+            <p>
+                <a>所以，這個程式運行越久，方框移動到邊界所花的時間就會越長。而在理想狀況下，多數的方框應該都會在畫面中心不停打轉。</a>
+            </p>
+        </div>
+        <div id="pad">
+            <canvas id="canvas"></canvas>
+            <div id="info">
+
+            </div>
+        </div>
+    </div>
+    <script src="./build/bundle.js"></script>
 </body>
 
 </html>
