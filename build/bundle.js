@@ -243,15 +243,18 @@ let population = 10;
 let movesetLength = 12;
 const CHARACTER_WIDTH = 10;
 const CHARACTER_HEIGHT = 10;
-const FPS = 60;
-const UPDATE_INTERVAL_MS = 1000 / FPS;
-let generation = 0;
+let fps = 60;
+let time = 0;
+let maxTime = 500;
+let aliveCount = 0;
 function initialization() {
+    // Hook EventListener
+    document.getElementById('slider').addEventListener("input", sliderChanged);
     // Initialization of MovingSquare
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     canvas.width = 400;
-    canvas.height = 400;
+    canvas.height = 300;
     squares = [];
     for (let i = 0; i < population; i++) {
         let mDot = new movingSquare_1.MovingSquare(ctx, canvas.width, canvas.height, CHARACTER_WIDTH, CHARACTER_HEIGHT, movesetLength);
@@ -278,18 +281,20 @@ function initialization() {
     run();
 }
 function run() {
-    updateText();
+    // To track time elapsed
+    let startTime = new Date().getTime();
     // Wipe the canvas.
     canvas.width = canvas.width;
     // Draw the squares.
+    aliveCount = 0;
     for (let i = 0; i < population; i++) {
         squares[i].move();
         squares[i].draw();
+        aliveCount += squares[i].isAlive === true ? 1 : 0;
     }
-    generation++;
-    let maxGeneration = 500;
-    if (generation > maxGeneration) {
-        generation = 0;
+    time++;
+    if (time > maxTime) {
+        time = 0;
         // Set fitness of each gene, according to the lifespan of the square 
         // that got the gene.
         for (let i = 0; i < population; i++) {
@@ -311,10 +316,29 @@ function run() {
             }
         }
     }
-    setTimeout(run, UPDATE_INTERVAL_MS);
+    updateText();
+    // To track time elapsed
+    let endTime = new Date().getTime();
+    let timeElapsed = endTime - startTime;
+    let runIntervalMs = 1000 / fps - timeElapsed;
+    console.log("timeElapsed= " + timeElapsed);
+    setTimeout(run, runIntervalMs);
 }
 function updateText() {
     document.getElementById('movesetLength').innerHTML = movesetLength.toString();
+    document.getElementById('generation').innerHTML = ga.generationCount.toString();
+    let frameIntervalMs = 1000 / fps;
+    let remainTimeInMs = (maxTime - time) * frameIntervalMs;
+    let remainTimeInSec = remainTimeInMs / 1000;
+    let nextGenerationInSec = Math.round(remainTimeInSec * 10) / 10;
+    document.getElementById('nextGenerationIn').innerHTML =
+        nextGenerationInSec.toString() + " s";
+    document.getElementById('aliveCount').innerHTML = aliveCount.toString();
+}
+function sliderChanged() {
+    let value = document.getElementById("slider").value;
+    fps = Number(value);
+    document.getElementById('fpsText').innerHTML = value;
 }
 initialization();
 

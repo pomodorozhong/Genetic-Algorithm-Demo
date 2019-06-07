@@ -2,7 +2,7 @@ canvas {
     margin-top: 6px;
     padding: 0px;
     width: 400px;
-    height: 400px;
+    height: 300px;
     box-shadow: 0 0 10px #777;
 }
 
@@ -11,10 +11,13 @@ canvas {
     margin-right: 1px;
 }
 
+.stats {}
+
 #frame {
     /* width: 100%;
     height: 100%; */
-    margin: 0;
+    /* margin: 0; */
+    padding-bottom: 2000px;
     padding: 0;
 }
 
@@ -30,4 +33,18 @@ canvas {
     font: 0.8em sans-serif;
 }
 
-#info {}
+#info {
+    margin-top: 10px;
+    padding: 10px;
+    box-shadow: 0 0 5px #777;
+}
+
+#fpsBar {
+    margin-top: 10px;
+    padding: 10px;
+    box-shadow: 0 0 5px #777;
+}
+
+#slider {
+    width: 100%;
+}
