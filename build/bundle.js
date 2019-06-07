@@ -241,10 +241,11 @@ let ga = null;
 let squares = null;
 let population = 10;
 let movesetLength = 12;
-let CHARACTER_WIDTH = 10;
-let CHARACTER_HEIGHT = 10;
-let FPS = 60;
-let time = 0;
+const CHARACTER_WIDTH = 10;
+const CHARACTER_HEIGHT = 10;
+const FPS = 60;
+const UPDATE_INTERVAL_MS = 1000 / FPS;
+let generation = 0;
 function initialization() {
     // Initialization of MovingSquare
     canvas = document.getElementById('canvas');
@@ -256,6 +257,8 @@ function initialization() {
         let mDot = new movingSquare_1.MovingSquare(ctx, canvas.width, canvas.height, CHARACTER_WIDTH, CHARACTER_HEIGHT, movesetLength);
         mDot.setRandomMoveset();
         squares.push(mDot);
+        // Draw the squares.
+        mDot.draw();
     }
     // Initialization of GA
     let mutationRate = 0.1;
@@ -275,40 +278,43 @@ function initialization() {
     run();
 }
 function run() {
-    // wipe the canvas.
+    updateText();
+    // Wipe the canvas.
     canvas.width = canvas.width;
-    // 畫框框
+    // Draw the squares.
     for (let i = 0; i < population; i++) {
-        squares[i].draw();
         squares[i].move();
+        squares[i].draw();
     }
-    time++;
-    if (time > 500) {
-        time = 0;
-        // 根據各個基因體的存活時間設定"適存性"
+    generation++;
+    let maxGeneration = 500;
+    if (generation > maxGeneration) {
+        generation = 0;
+        // Set fitness of each gene, according to the lifespan of the square 
+        // that got the gene.
         for (let i = 0; i < population; i++) {
-            // 平方加權
-            // 搭配 "Resampling Wheel"，會讓稍微多活一點的個體，產生更多的後代
-            ga.setFitness(i, Math.pow(squares[i].lifespan, 2));
-            // ga.fitness[i] = Math.pow(mDots[i].lifespan, 2);
+            // 立方加權。這搭配 "Resampling Wheel"，會讓稍微多活一點的個體，產生更多的後代
+            let fitness = Math.pow(squares[i].lifespan, 3);
+            ga.setFitness(i, fitness);
         }
-        // 基因算法
         ga.produceNextGeneration();
-        // 產生新的移動矩形
+        // Produce new squares.
         squares = [];
         for (let j = 0; j < population; j++) {
             let mDot = new movingSquare_1.MovingSquare(ctx, canvas.width, canvas.height, CHARACTER_WIDTH, CHARACTER_HEIGHT, movesetLength);
             squares.push(mDot);
         }
-        // 在新的移動矩形上套用新的移動模式
+        // Set new moveset using new gene.
         for (let i = 0; i < population; i++) {
-            let chromosome = [];
             for (let j = 0; j < movesetLength; j++) {
                 squares[i].moveset[j] = ga.chromosomes[i][j];
             }
         }
     }
-    setTimeout(run, 1000 / FPS);
+    setTimeout(run, UPDATE_INTERVAL_MS);
+}
+function updateText() {
+    document.getElementById('movesetLength').innerHTML = movesetLength.toString();
 }
 initialization();
 
@@ -373,14 +379,12 @@ class MovingSquare {
         newPosX = newPosX <= 0 ? 0 : newPosX;
         newPosY = newPosY >= this.canvasHeight ? this.canvasHeight : newPosY;
         newPosY = newPosY <= 0 ? 0 : newPosY;
-        if (newPosX === this.canvasWidth || newPosX === 0 ||
-            newPosY === this.canvasHeight || newPosY === 0) {
-            this.isAlive = false;
+        if (!this.IfCollided(newPosX, newPosY)) {
+            this.x = newPosX;
+            this.y = newPosY;
+            this.movesetIndex = this.movesetIndex + 1 === this.moveset.length ?
+                0 : this.movesetIndex + 1;
         }
-        this.x = newPosX;
-        this.y = newPosY;
-        this.movesetIndex = this.movesetIndex + 1 === this.moveset.length ?
-            0 : this.movesetIndex + 1;
     }
     draw() {
         if (!this.isAlive) {
@@ -393,6 +397,13 @@ class MovingSquare {
         this.ctx.strokeRect(this.x - this.characterWidth / 2, this.y - this.characterHeight / 2, this.characterWidth, this.characterHeight);
         this.ctx.moveTo(this.x, this.y);
         this.ctx.stroke();
+    }
+    IfCollided(newPosX, newPosY) {
+        if (newPosX === this.canvasWidth || newPosX === 0 ||
+            newPosY === this.canvasHeight || newPosY === 0) {
+            this.isAlive = false;
+        }
+        return !this.isAlive;
     }
 }
 exports.MovingSquare = MovingSquare;

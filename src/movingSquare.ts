@@ -4,13 +4,14 @@ export class MovingSquare {
     private canvasHeight: number;
     private characterWidth: number;
     private characterHeight: number;
-    x: number;
-    y: number;
-    moveset: Array<number>;
-    movesetIndex: number = 0;
-    moveSpeed: number = 5;
-    isAlive: boolean = true;
-    lifespan: number = 0;
+
+    public x: number;
+    public y: number;
+    public moveset: Array<number>;
+    public movesetIndex: number = 0;
+    public moveSpeed: number = 5;
+    public isAlive: boolean = true;
+    public lifespan: number = 0;
 
     constructor(
         ctx: CanvasRenderingContext2D,
@@ -34,22 +35,22 @@ export class MovingSquare {
         // this.moveSet = [0, 1, 2, 3];
     }
 
-    setRandomMoveset(): void {
-        let length = this.moveset.length;
-        for (let i = 0; i < length; i++) {
+    public setRandomMoveset(): void {
+        let length: number = this.moveset.length;
+        for (let i: number = 0; i < length; i++) {
             this.moveset[i] = Math.round(Math.random() * 3);
         }
     }
 
-    move(): void {
+    public move(): void {
         if (!this.isAlive) {
             return;
         }
         this.lifespan += 1;
 
-        let direction = this.moveset[this.movesetIndex] % 4;
-        let newPosX = 0;
-        let newPosY = 0;
+        let direction: number = this.moveset[this.movesetIndex] % 4;
+        let newPosX: number = 0;
+        let newPosY: number = 0;
 
         switch (direction) {
             case 0: //up
@@ -77,19 +78,16 @@ export class MovingSquare {
         newPosY = newPosY >= this.canvasHeight ? this.canvasHeight : newPosY;
         newPosY = newPosY <= 0 ? 0 : newPosY;
 
-        if (newPosX === this.canvasWidth || newPosX === 0 ||
-            newPosY === this.canvasHeight || newPosY === 0) {
-            this.isAlive = false;
+        if (!this.IfCollided(newPosX, newPosY)) {
+            this.x = newPosX;
+            this.y = newPosY;
+            
+            this.movesetIndex = this.movesetIndex + 1 === this.moveset.length ?
+                0 : this.movesetIndex + 1;
         }
-
-        this.x = newPosX;
-        this.y = newPosY;
-
-        this.movesetIndex = this.movesetIndex + 1 === this.moveset.length ?
-            0 : this.movesetIndex + 1;
     }
 
-    draw(): void {
+    public draw(): void {
         if (!this.isAlive) {
             this.ctx.strokeStyle = "red";
         }
@@ -104,5 +102,14 @@ export class MovingSquare {
             this.characterHeight);
         this.ctx.moveTo(this.x, this.y);
         this.ctx.stroke();
+    }
+
+    private IfCollided(newPosX, newPosY): boolean {
+        if (newPosX === this.canvasWidth || newPosX === 0 ||
+            newPosY === this.canvasHeight || newPosY === 0) {
+            this.isAlive = false;
+        }
+
+        return !this.isAlive;
     }
 }

@@ -3,26 +3,27 @@ export { }
 import { MovingSquare } from "./movingSquare";
 import { GeneticAlgorithm } from "./geneticAlgorithm";
 
-let canvas;
+let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 let ga: GeneticAlgorithm = null;
 let squares: Array<MovingSquare> = null;
-let population = 10;
-let movesetLength = 12;
-let CHARACTER_WIDTH = 10;
-let CHARACTER_HEIGHT = 10;
-let FPS = 60;
-let time = 0;
+let population: number = 10;
+let movesetLength: number = 12;
+const CHARACTER_WIDTH: number = 10;
+const CHARACTER_HEIGHT: number = 10;
+const FPS: number = 60;
+const UPDATE_INTERVAL_MS: number = 1000 / FPS;
+let generation: number = 0;
 
 function initialization() {
   // Initialization of MovingSquare
-  canvas = document.getElementById('canvas');
+  canvas = <HTMLCanvasElement>document.getElementById('canvas');
   ctx = canvas.getContext('2d');
   canvas.width = 400;
   canvas.height = 400;
   squares = [];
-  for (let i = 0; i < population; i++) {
-    let mDot = new MovingSquare(
+  for (let i: number = 0; i < population; i++) {
+    let mDot: MovingSquare = new MovingSquare(
       ctx,
       canvas.width,
       canvas.height,
@@ -32,6 +33,9 @@ function initialization() {
     mDot.setRandomMoveset();
 
     squares.push(mDot)
+
+    // Draw the squares.
+    mDot.draw();
   }
 
   // Initialization of GA
@@ -42,13 +46,13 @@ function initialization() {
     crossOverRate,
     movesetLength,
     population);
-  for (let i = 0; i < movesetLength; i++) {
+  for (let i: number = 0; i < movesetLength; i++) {
     ga.setGeneBoundry(i, 0, 3);
   }
   ga.setBinaryEncodeParm();
-  for (let i = 0; i < population; i++) {
+  for (let i: number = 0; i < population; i++) {
     let chromosome: Array<number> = new Array();
-    for (let j = 0; j < movesetLength; j++) {
+    for (let j: number = 0; j < movesetLength; j++) {
       chromosome.push(squares[i].moveset[j])
     }
     ga.setChromosome(i, chromosome);
@@ -58,34 +62,36 @@ function initialization() {
 }
 
 function run() {
-  // wipe the canvas.
+  updateText();
+
+  // Wipe the canvas.
   canvas.width = canvas.width;
 
-  // 畫框框
-  for (let i = 0; i < population; i++) {
-    squares[i].draw();
+  // Draw the squares.
+  for (let i: number = 0; i < population; i++) {
     squares[i].move();
+    squares[i].draw();
   }
 
-  time++;
-  if (time > 500) {
-    time = 0;
+  generation++;
+  let maxGeneration: number = 500;
+  if (generation > maxGeneration) {
+    generation = 0;
 
-    // 根據各個基因體的存活時間設定"適存性"
-    for (let i = 0; i < population; i++) {
-      // 平方加權
-      // 搭配 "Resampling Wheel"，會讓稍微多活一點的個體，產生更多的後代
-      ga.setFitness(i, Math.pow(squares[i].lifespan, 2));
-      // ga.fitness[i] = Math.pow(mDots[i].lifespan, 2);
+    // Set fitness of each gene, according to the lifespan of the square 
+    // that got the gene.
+    for (let i: number = 0; i < population; i++) {
+      // 立方加權。這搭配 "Resampling Wheel"，會讓稍微多活一點的個體，產生更多的後代
+      let fitness: number = Math.pow(squares[i].lifespan, 3);
+      ga.setFitness(i, fitness);
     }
 
-    // 基因算法
     ga.produceNextGeneration();
 
-    // 產生新的移動矩形
+    // Produce new squares.
     squares = [];
-    for (let j = 0; j < population; j++) {
-      let mDot = new MovingSquare(
+    for (let j: number = 0; j < population; j++) {
+      let mDot: MovingSquare = new MovingSquare(
         ctx,
         canvas.width,
         canvas.height,
@@ -95,16 +101,19 @@ function run() {
       squares.push(mDot)
     }
 
-    // 在新的移動矩形上套用新的移動模式
-    for (let i = 0; i < population; i++) {
-      let chromosome = [];
-      for (let j = 0; j < movesetLength; j++) {
+    // Set new moveset using new gene.
+    for (let i: number = 0; i < population; i++) {
+      for (let j: number = 0; j < movesetLength; j++) {
         squares[i].moveset[j] = ga.chromosomes[i][j];
       }
     }
   }
 
-  setTimeout(run, 1000 / FPS);
+  setTimeout(run, UPDATE_INTERVAL_MS);
+}
+
+function updateText(){
+  document.getElementById('movesetLength').innerHTML = movesetLength.toString();
 }
 
 initialization();
